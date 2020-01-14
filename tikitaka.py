@@ -8,7 +8,7 @@ import math
 import queue
 
 
-arduinoData = serial.Serial('/dev/ttyUSB0',4800,timeout=1)
+arduinoData = serial.Serial('COM19',4800,timeout=1)
 
 # Full Screen Code      
 class FullScreenApp(object):
@@ -30,9 +30,12 @@ puan = StringVar()
 atis = StringVar()
 score = 0
 seconds = 60
+atis_sayi = 0
 var.set(seconds)
 puan.set(score)
+atis.set(atis_sayi)
 after = None
+p=False
 
 def baslat():
     arduinoData.write("RUN".encode())
@@ -50,10 +53,12 @@ def puan_1():
         s = arduinoData.readline()
         s = s.strip()
         print(s.decode("utf-8"))
-        puan.set(s.decode("utf-8"))
         i += 1
         if i == 3:
-           break
+            puan.set(s.decode("utf-8"))
+        if i == 4:
+            atis.set(s.decode("utf-8"))
+            break
                   
 def countdown(count):
     var.set(float("%.2f" % count))
@@ -96,43 +101,50 @@ root.attributes("-topmost",1)
 root.columnconfigure(0, weight=1)
 root.columnconfigure(1, weight=2)
 root.resizable(width=False, height=False)
-root.configure(background='antiquewhite')
+root.configure(background='white')
+color_text = "white"
 
 resim = PhotoImage(file="tikitaka.png")
 yazi = Label(image = resim,compound="left")
-yazi.pack()
-
-color_text = "antiquewhite"
+yazi.place(relx=0.49,rely=0.1,anchor=CENTER)
 
 puanLabel = Label(root,text="Puan: ", font=("Helvetica", 40))
-puanLabel.place(relx=0.4,rely=0.3,anchor=CENTER)
+puanLabel.place(relx=0.46,rely=0.3,anchor=CENTER)
 puanLabel.configure(bg=color_text)
 
 puanSayi = Label(root,textvariable=puan,font=("Helvetica", 40))
-puanSayi.place(relx=0.5,rely=0.3,anchor=CENTER)
+puanSayi.place(relx=0.55,rely=0.3,anchor=CENTER)
 puanSayi.configure(bg=color_text)
 
 sureLabel = Label(root, text="Süre: ", font=("Helvetica", 40))
-sureLabel.place(relx=0.4,rely=0.4,anchor=CENTER)
+sureLabel.place(relx=0.46,rely=0.4,anchor=CENTER)
 sureLabel.configure(bg=color_text)
 
 sureSayi = Label(root, textvariable=var, font=("Helvetica", 40))
-sureSayi.place(relx=0.5,rely=0.4,anchor=CENTER)
+sureSayi.place(relx=0.55,rely=0.4,anchor=CENTER)
 sureSayi.configure(bg=color_text)
 
+atisLabel = Label(root, text="Atış: ", font=("Helvetica", 40))
+atisLabel.place(relx=0.46,rely=0.5,anchor=CENTER)
+atisLabel.configure(bg=color_text)
+
+atisSayi = Label(root, textvariable=atis, font=("Helvetica", 32))
+atisSayi.place(relx=0.55,rely=0.5,anchor=CENTER)
+atisSayi.configure(bg=color_text)
+
 baslatbutton = Button(root, text="Game Start",fg="white", font=("Helvetica", 25),height=1, width=15, command=baslat)
-baslatbutton.place(relx=0.33, rely=0.6, anchor=CENTER)
+baslatbutton.place(relx=0.4, rely=0.65, anchor=CENTER)
 baslatbutton.configure(bg="green",fg="white")
 
 bitirbutton = Button(root, text="Game Stop",fg="red", font=("Helvetica", 25),height=1, width=15, command=bitir)
-bitirbutton.place(relx=0.33,rely=0.7,anchor=CENTER)
+bitirbutton.place(relx=0.4,rely=0.75,anchor=CENTER)
 
 
 ledbutton = Button(root, text="Panel Led",fg="black", font=("Helvetica", 25),height=1, width=10, command=led)
-ledbutton.place(relx=0.6,rely=0.7,anchor=CENTER)
+ledbutton.place(relx=0.6,rely=0.75,anchor=CENTER)
 
 Stopbutton = Button(root,text="Quit",fg="red",font=("Helvetica",25),height=1,width=10,command=root.destroy)
 Stopbutton.pack()
-Stopbutton.place(relx=0.6,rely=0.6,anchor=CENTER) 
+Stopbutton.place(relx=0.6,rely=0.65,anchor=CENTER)
 app=FullScreenApp(root)
 root.mainloop()
