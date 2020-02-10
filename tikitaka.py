@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.7
 # -*-coding: utf8-*-
 
 from tkinter import *
@@ -6,10 +6,12 @@ import serial
 import time
 import math
 import queue
+from random import seed
+from random import randint
+from threading import Thread
 
-
-arduinoData = serial.Serial('COM19',4800,timeout=1)
-
+arduinoData = serial.Serial('/dev/ttyS0',4800,timeout=1)
+	
 # Full Screen Code      
 class FullScreenApp(object):
     def __init__(self, master, **kwargs):
@@ -27,37 +29,32 @@ class FullScreenApp(object):
 root = Tk()
 var = StringVar()
 puan = StringVar()
-atis = StringVar()
 score = 0
 seconds = 60
-atis_sayi = 0
 var.set(seconds)
 puan.set(score)
-atis.set(atis_sayi)
 after = None
-p=False
 
 def baslat():
     arduinoData.write("RUN".encode())
     baslatbutton.configure(state=DISABLED)
     bitirbutton.configure(state=NORMAL)
     ledbutton.configure(state=DISABLED)
-    puan.set(score)
     time.sleep(2)
     countdown(seconds)
-    
+
 def puan_1():
-    i = 0
+    time.sleep(1)
+    i=0
     arduinoData.flushInput()
     while True:
         s = arduinoData.readline()
         s = s.strip()
+        arduinoData.write('PUAN"\n"'.encode("utf-8"))
+        puan.set(s.decode("utf-8"))
         print(s.decode("utf-8"))
         i += 1
-        if i == 3:
-            puan.set(s.decode("utf-8"))
-        if i == 4:
-            atis.set(s.decode("utf-8"))
+        if i == 2:
             break
                   
 def countdown(count):
@@ -76,11 +73,11 @@ def countdown(count):
 
 def bitir():
     arduinoData.write("STOP".encode())
-    puan_1()
     baslatbutton.configure(state=NORMAL)
     ledbutton.configure(state=NORMAL)
     root.after_cancel(after)
     var.set(seconds)
+    puan.set(score)
 
     
 def led():
@@ -90,7 +87,6 @@ def led():
     while True:
         s = arduinoData.readline()
         s = s.strip()
-        print(s.decode("utf-8"))
         i += 1
         if i == 40:
             break
@@ -108,33 +104,26 @@ resim = PhotoImage(file="tikitaka.png")
 yazi = Label(image = resim,compound="left")
 yazi.place(relx=0.49,rely=0.1,anchor=CENTER)
 
-puanLabel = Label(root,text="Puan: ", font=("Helvetica", 40))
+puanLabel = Label(root,text="Puan: ", font=("Helvetica", 50))
 puanLabel.place(relx=0.46,rely=0.3,anchor=CENTER)
 puanLabel.configure(bg=color_text)
 
-puanSayi = Label(root,textvariable=puan,font=("Helvetica", 40))
+puanSayi = Label(root,textvariable=puan,font=("Helvetica", 50))
 puanSayi.place(relx=0.55,rely=0.3,anchor=CENTER)
 puanSayi.configure(bg=color_text)
 
-sureLabel = Label(root, text="Süre: ", font=("Helvetica", 40))
-sureLabel.place(relx=0.46,rely=0.4,anchor=CENTER)
+sureLabel = Label(root, text="Süre: ", font=("Helvetica", 50))
+sureLabel.place(relx=0.46,rely=0.45,anchor=CENTER)
 sureLabel.configure(bg=color_text)
 
-sureSayi = Label(root, textvariable=var, font=("Helvetica", 40))
-sureSayi.place(relx=0.55,rely=0.4,anchor=CENTER)
+sureSayi = Label(root, textvariable=var, font=("Helvetica", 50))
+sureSayi.place(relx=0.55,rely=0.45,anchor=CENTER)
 sureSayi.configure(bg=color_text)
 
-atisLabel = Label(root, text="Atış: ", font=("Helvetica", 40))
-atisLabel.place(relx=0.46,rely=0.5,anchor=CENTER)
-atisLabel.configure(bg=color_text)
 
-atisSayi = Label(root, textvariable=atis, font=("Helvetica", 32))
-atisSayi.place(relx=0.55,rely=0.5,anchor=CENTER)
-atisSayi.configure(bg=color_text)
-
-baslatbutton = Button(root, text="Game Start",fg="white", font=("Helvetica", 25),height=1, width=15, command=baslat)
+baslatbutton = Button(root, text="Game Start",fg="green", font=("Helvetica", 25),height=1, width=15, command=baslat)
 baslatbutton.place(relx=0.4, rely=0.65, anchor=CENTER)
-baslatbutton.configure(bg="green",fg="white")
+
 
 bitirbutton = Button(root, text="Game Stop",fg="red", font=("Helvetica", 25),height=1, width=15, command=bitir)
 bitirbutton.place(relx=0.4,rely=0.75,anchor=CENTER)
