@@ -9,21 +9,26 @@ int ResPin = 7;
 int s = 1;
 unsigned long zaman_1 = 0;
 unsigned long zaman_2 = 0;
+int mybuttonpin = 13;
+int sensora0 = A0;
+int sensoranalogdurum = -1;
 
 void setup() {
   Serial.begin(4800);
   digitalWrite(ResPin, HIGH);
   pinMode(ResPin, OUTPUT);
+  pinMode(mybuttonpin, INPUT_PULLUP);
+  sensoranalogdurum = analogRead(A0);
 }
 
 void loop() {
-
-  Serial.setTimeout(400);
+  Serial.setTimeout(100);
   randomSeed(random(1, 1000));
   String s1 = Serial.readString();
+
   if (s1.indexOf("RUN") >= 0) {
     calis = true;
-    delay(1000);
+    delay(300);
     r = true;
     //s = 0;
     total = 0;
@@ -31,17 +36,19 @@ void loop() {
   }
 
   if (calis == true && r == true) {
-    //randNumber = random(1, 21);
-    randNumber = s++;
+    randNumber = random(1, 21);
+    //randNumber = s++;
     Serial.println("LED=" + String(randNumber) + "," + String(2));
     zaman_1 = millis();
     calis = false;
     if (randNumber != 0) {
       //Serial.println("L");
     }
-    delay(1000);
+    delay(300);
   }
-
+  int buttondeger = digitalRead(mybuttonpin);
+  //Serial.println(buttondeger);
+  //buttondeger == 1
   if (s1.indexOf("B=" + String(randNumber) + "," + String(1)) >= 0) {
     Serial.println("LED=" + String(randNumber) + "," + String(3));
     zaman_2 = millis();
@@ -53,7 +60,7 @@ void loop() {
     if (randNumber != 0) {
       //Serial.println("B");
     }
-    delay(1000);
+    delay(300);
   }
 
   if (s1.indexOf("STOP") >= 0) {
@@ -61,17 +68,17 @@ void loop() {
     Serial.println("LED=" + String(randNumber) + "," + String(3));
   }
   if (s1.indexOf("PUAN") >= 0) {
-    for (int i = 1; i <= 3; i++){
-    Serial.println(total);
-    delay(100);
-  }
+    for (int i = 1; i <= 3; i++) {
+      Serial.println(total);
+      delay(100);
+    }
   }
 
   if (s1.indexOf("RESET") >= 0 ) {
     digitalWrite(ResPin, LOW);
   }
 
-  if (s1.indexOf("LED") >= 0) {
+  if (s1.indexOf("LED") >= 0 ) {
     for ( int p = 1; p <= 20; p++) {
       Serial.println("LED=" + String(p) + "," + String(2));
       delay(50);
@@ -82,7 +89,5 @@ void loop() {
       delay(50);
     }
     delay(200);
-
   }
-
 }
