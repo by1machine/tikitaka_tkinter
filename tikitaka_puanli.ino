@@ -1,71 +1,126 @@
-#include <math.h>
-int randNumber;
-int calis = false;
-int r = false;
-int total = 0;
-int puan = 0;
-int top = 0;
-int ResPin = 7;
-int s = 1;
-unsigned long zaman_1 = 0;
-unsigned long zaman_2 = 0;
-int mybuttonpin = 13;
-int sensora0 = A0;
-int sensoranalogdurum = -1;
+#include <math.h> // Kütüphane tanımlamaları
+
+int randNumber;     // random sayı değişken tanımlaması
+int calis = false;  // başlat komut şartını sağlayan değişken
+int r = false;      // stop komut şartını sağlayan değişken
+int total = 0;      // toplam puan değişkeni
+int puan = 0;       // anlık puan değişkeni
+int Dt = 0;         // iki panel arasında ki süre farkı (sn)
+String LED_ON;      // Panel Led on ışık satırı
+String LED_OFF;     // Panel Led off ışık satırı
+String STOP;
+int count = 0;      // sayaç değişkeni
+int b = 0;          // panel durum değişken sayacı
+int ilk_panel;      // ilk panel değişkeni
+int son_panel;      // son panel değişkeni
+int fark;           // ilk-son panel değişkeni
+int a = false;
+int c = true;
+unsigned long t1 = 0; // ilk panel süresi
+unsigned long t2 = 0; // son panel süresi
+int k = 0;            // puan katsayısı
+int K = 20;           // puan katsayısı
+
 
 void setup() {
-  Serial.begin(4800);
-  digitalWrite(ResPin, HIGH);
-  pinMode(ResPin, OUTPUT);
-  pinMode(mybuttonpin, INPUT_PULLUP);
-  sensoranalogdurum = analogRead(A0);
+  Serial.begin(4800); // bant tanımlaması (paneller ile aynı olmalı)
+
 }
 
 void loop() {
-  Serial.setTimeout(100);
-  randomSeed(random(1, 1000));
-  String s1 = Serial.readString();
 
-  if (s1.indexOf("RUN") >= 0) {
+  Serial.setTimeout(350);           // loop yenilenme süresi
+  randomSeed(random(1, 1000));      // random matris değişkeni
+  String s1 = Serial.readString();  // string veri okuma
+
+
+  if (s1.indexOf("RUN") >= 0) {     // RUN yazısı seri port'a gelirse if şartı sağlansın
     calis = true;
-    delay(300);
-    r = true;
-    //s = 0;
+    r = true;                       // STOP komutu şartı
+    a = true;
+    c = false;
     total = 0;
-    top = 0;
+    Dt = 0;
+    puan = 0;
+    fark = 0;
   }
 
-  if (calis == true && r == true) {
+  if (calis == true && r == true) { // bir önceki şart (calis=true) sağlanırsa random sayı üretilsin
     randNumber = random(1, 21);
-    //randNumber = s++;
-    Serial.println("LED=" + String(randNumber) + "," + String(2));
-    zaman_1 = millis();
+    LED_ON = "LED=" + String(randNumber) + "," + String(2);
+    Serial.println(LED_ON);
+    t1 = millis();
+    b++;
+    count++;
+    if (b == 1) {
+      ilk_panel = randNumber;
+    }
+    a = true;
     calis = false;
-    if (randNumber != 0) {
-      //Serial.println("L");
-    }
-    delay(300);
   }
-  int buttondeger = digitalRead(mybuttonpin);
-  //Serial.println(buttondeger);
-  //buttondeger == 1
+
   if (s1.indexOf("B=" + String(randNumber) + "," + String(1)) >= 0) {
-    Serial.println("LED=" + String(randNumber) + "," + String(3));
-    zaman_2 = millis();
-    top = (zaman_2 - zaman_1) / 1000;
-    puan = ceil(20 * exp(-top / 2));
-    total = total + puan;
-    //Serial.println(total);
+
+    LED_OFF = "LED=" + String(randNumber) + "," + String(3);
+    Serial.println(LED_OFF);
+    t2 = millis();
+    Dt = (t2 - t1) / 1000;
     calis = true;
-    if (randNumber != 0) {
-      //Serial.println("B");
+    if (b == 2) {
+      son_panel = randNumber;
+      fark = ilk_panel - son_panel;
+      b = 0;
     }
-    delay(300);
+
+    if (abs(fark) == 10) {
+      k = 2;
+      puan = k * ceil(K * exp(-Dt / 2));
+      total = total + puan;
+
+    }
+    else if (fark == 0) {
+      k = 1;
+      puan = k * ceil(K * exp(-Dt / 2));
+      total = total + puan;
+
+    }
+    else if (abs(fark) < 10 && fark > 0) {
+      k = 1 + abs(fark) / 10;
+      puan = k * ceil(K * exp(-Dt / 2));
+      total = total + puan;
+
+    }
+    else if (abs(fark) < 10 && fark < 0) {
+      k = 1 + abs(fark) / 10;
+      puan = k * ceil(K * exp(-Dt / 2));
+      total = total + puan;
+
+    }
+    else if (abs(fark) > 10 && fark < 0) {
+      k = 3 - abs(fark) / 10;
+      puan = k * ceil(K * exp(-Dt / 2));
+      total = total + puan;
+
+    }
+    else if (abs(fark) > 10 && fark > 0) {
+      k = 3 - abs(fark) / 10;
+      puan = k * ceil(K * exp(-Dt / 2));
+      total = total + puan;
+
+    }
+
+    a = false;
   }
+
 
   if (s1.indexOf("STOP") >= 0) {
+
     r = false;
-    Serial.println("LED=" + String(randNumber) + "," + String(3));
+    STOP = "LED=" + String(randNumber) + "," + String(3);
+    Serial.println(STOP);
+    a = false;
+
+
   }
   if (s1.indexOf("PUAN") >= 0) {
     for (int i = 1; i <= 3; i++) {
@@ -74,20 +129,23 @@ void loop() {
     }
   }
 
-  if (s1.indexOf("RESET") >= 0 ) {
-    digitalWrite(ResPin, LOW);
-  }
+  if (s1.indexOf("LED") >= 0) {
 
-  if (s1.indexOf("LED") >= 0 ) {
     for ( int p = 1; p <= 20; p++) {
-      Serial.println("LED=" + String(p) + "," + String(2));
+
+      String LED_P = "LED=" + String(p) + "," + String(3);
+      Serial.println(LED_P);
       delay(50);
     }
     delay(200);
     for ( int k = 1; k <= 20; k++) {
-      Serial.println("LED=" + String(k) + "," + String(3));
+
+      String LED_K = "LED=" + String(k) + "," + String(3);
+      Serial.println(LED_K);
       delay(50);
     }
     delay(200);
+
   }
+
 }
