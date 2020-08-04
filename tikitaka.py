@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.7
 # -*-coding: utf8-*-
 
+#KÜTÜPHANE
 from tkinter import *
 import serial
 import time
@@ -10,9 +11,9 @@ from random import seed
 from random import randint
 from threading import Thread
 
-arduinoData = serial.Serial('/dev/ttyS0',4800,timeout=1)
+arduinoData = serial.Serial('/dev/ttyS0',4800,timeout=1) #SERIAL PORT TANIMLAMA
 	
-# Full Screen Code      
+# PROGRAMIN TAM EKRAN KODU      
 class FullScreenApp(object):
     def __init__(self, master, **kwargs):
         self.master=master
@@ -26,15 +27,16 @@ class FullScreenApp(object):
         self.master.geometry(self._geom)
         self._geom=geom
       
-root = Tk()
-var = StringVar()
-puan = StringVar()
-score = 0
-seconds = 60
-var.set(seconds)
-puan.set(score)
+root = Tk() #TKINTER ARAYÜZ OLUŞTURMA
+var = StringVar() #SÜRE STRING TANIMLAMA
+puan = StringVar() #PUAN STRING TANIMLAMA
+score = 0 #DEFAULT SÜRE
+seconds = 60 #MAX. SÜRE
+var.set(seconds) #VAR DEĞİŞKENİNE SÜREYİ ATAMA
+puan.set(score)  #PUAN DEĞİŞKENİNE SKORU ATAMA
 after = None
 
+ #BAŞLAT FONKSİYONU
 def baslat():
     arduinoData.write("RUN".encode())
     baslatbutton.configure(state=DISABLED)
@@ -42,7 +44,8 @@ def baslat():
     ledbutton.configure(state=DISABLED)
     time.sleep(2)
     countdown(seconds)
-
+	
+#PUAN FONKSİYONU
 def puan_1():
     time.sleep(1)
     i=0
@@ -56,7 +59,7 @@ def puan_1():
         i += 1
         if i == 2:
             break
-                  
+  #SAYAÇ FONKSİYONU                
 def countdown(count):
     var.set(float("%.2f" % count))
     global after
@@ -70,7 +73,7 @@ def countdown(count):
         ledbutton.configure(state=NORMAL)
     if count > 0.1:
         after
-
+#BİTİRME FONKSİYONU
 def bitir():
     arduinoData.write("STOP".encode())
     baslatbutton.configure(state=NORMAL)
@@ -79,7 +82,7 @@ def bitir():
     var.set(seconds)
     puan.set(score)
 
-    
+ #SIRALI LED FONKSİYONU   
 def led():
     arduinoData.write("LED".encode())
     puan.set(score)
@@ -91,6 +94,7 @@ def led():
         if i == 40:
             break
 
+#PROGRAM BUTON,YAZI VE BOUTLANDIRMA AYARLARI
 root.title("TikiTaka")
 root.overrideredirect(1)    
 root.attributes("-topmost",1)
